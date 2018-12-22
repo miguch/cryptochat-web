@@ -1,34 +1,55 @@
 package rsa_crypt
 
 import (
-	drr "./deterministic-random-reader"
 	"crypto"
-	"crypto/rand"
 	"crypto/rsa"
 	"crypto/sha256"
 	"crypto/x509"
 	"encoding/base64"
+	"encoding/binary"
+	"hash/fnv"
 	"io"
+	"math/rand"
+	"strconv"
+
+	"golang.org/x/crypto/pbkdf2"
 )
 
+func getBytesHash64(str []byte) uint64 {
+	h := fnv.New64a()
+	h.Write([]byte(str))
+	return h.Sum64()
+}
+
+func getBytesHash32(str []byte) uint32 {
+	h := fnv.New32a()
+	h.Write([]byte(str))
+	return h.Sum32()
+}
+
 type ChatCrypto struct {
-	Passphrase string
-	UserAddress string
+	Passphrase    string
+	UserAddress   string
 	RsaPrivateKey *rsa.PrivateKey
-	randReader io.Reader
+	randReader    io.Reader
 }
 
 func NewChatCrypto(address, passphrase string) (*ChatCrypto, error) {
-	randReader := drr.NewReader(passphrase, address)
-	key, err := rsa.GenerateKey(randReader, 1024)
+	salt := strconv.Itoa(len(address) + len(passphrase) + int(getBytesHash32([]byte(address+passphrase))))
+
+	dk := pbkdf2.Key([]byte(passphrase+address), []byte(salt), 10000, 64, sha256.New)
+	seed := int64(binary.LittleEndian.Uint64(dk))
+	randReader := rand.New(rand.NewSource(seed))
+
+	key, err := generateMultiPrimeKey(randReader, 2, 1024)
 	if err != nil {
 		return nil, err
 	}
 	return &ChatCrypto{
-		Passphrase: passphrase,
-		UserAddress: address,
+		Passphrase:    passphrase,
+		UserAddress:   address,
 		RsaPrivateKey: key,
-		randReader: randReader,
+		randReader:    randReader,
 	}, nil
 }
 
@@ -37,11 +58,11 @@ func (cc *ChatCrypto) Encrypt(plainText, publicKey []byte) ([]byte, error) {
 	if err != nil {
 		return []byte{}, err
 	}
-	return rsa.EncryptPKCS1v15(rand.Reader, pubKey, plainText)
+	return rsa.EncryptPKCS1v15(cc.randReader, pubKey, plainText)
 }
 
 func (cc *ChatCrypto) Decrypt(cipherText []byte) ([]byte, error) {
-	return cc.RsaPrivateKey.Decrypt(rand.Reader, cipherText, nil)
+	return cc.RsaPrivateKey.Decrypt(cc.randReader, cipherText, nil)
 }
 
 func (cc *ChatCrypto) GetPublicKey() []byte {
@@ -69,7 +90,7 @@ func (cc *ChatCrypto) DecryptString(cipherText string) (string, error) {
 
 func (cc *ChatCrypto) SignMessage(message []byte) ([]byte, error) {
 	hashed := sha256.Sum256(message)
-	return rsa.SignPKCS1v15(rand.Reader, cc.RsaPrivateKey, crypto.SHA256, hashed[:])
+	return rsa.SignPKCS1v15(cc.randReader, cc.RsaPrivateKey, crypto.SHA256, hashed[:])
 }
 
 func (cc *ChatCrypto) SignMessageString(message string) (string, error) {

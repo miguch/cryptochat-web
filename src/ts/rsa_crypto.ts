@@ -26,7 +26,7 @@ class cryptoUtils {
         return this.crypt.EncryptWithPubKey(this.GetPublicKey(), objJson);
     }
 
-    public GetObjectEncryptedJson(obj: any, publicKey: string): [string, boolean] {
+    public EncryptWithPubKey(obj: any, publicKey: string): [string, boolean] {
         if (typeof this.crypt === 'undefined') {
             throw "Crypt not initialized";
         }

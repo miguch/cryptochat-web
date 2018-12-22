@@ -1,4 +1,4 @@
-
+//Deprecated
 
 declare namespace blockies {
     function create(config?: blockies.BlockiesConfig): HTMLCanvasElement

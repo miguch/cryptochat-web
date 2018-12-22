@@ -1,7 +1,6 @@
 /*** This file contains code to interact with blockchain using web3 */
 import Eth from 'ethjs'
 
-import Chat from './chat';
 import info from "./contractInfo";
 
 let abi = info.abi;
@@ -12,7 +11,6 @@ window.web3 = window.web3 || undefined;
 
 let contract: any;
 let eth: any;
-let chatter: Chat | undefined = undefined;
 
 window.addEventListener('load', function() {
     // Checking if Web3 has been injected by the browser (Mist/MetaMask)
@@ -28,20 +26,24 @@ window.addEventListener('load', function() {
     contract = eth.contract(abi).at(contractAddr);
 
     window.web3.currentProvider.enable();
-
-    chatter = new Chat(window.web3.eth.accounts[0]);
 });
 
-export = {
-    getContract: function () {
+export default new class {
+    get Contract() {
         return contract;
-    },
-    getEth: function () {
+    }
+    get Eth() {
         return eth;
-    },
-    getChatter: function () {
-        return chatter
-    },
-    address: window.web3.eth.accounts[0]
+    }
+    get Address() {
+        return window.web3 ? window.web3.eth.accounts[0] : undefined;
+    }
+    get web3() {
+        return window.web3;
+    }
+    checkValidAddress(address: string): boolean {
+        let format = /^(0x)?[0-9a-f]{40}$/i;
+        return format.test(address);
+    }
 };
 

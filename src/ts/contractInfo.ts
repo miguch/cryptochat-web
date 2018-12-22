@@ -183,8 +183,12 @@ let contractInfo = [
         "name": "getAddrFromName",
         "outputs": [
             {
-                "name": "",
+                "name": "target",
                 "type": "address"
+            },
+            {
+                "name": "status",
+                "type": "bool"
             }
         ],
         "payable": false,
@@ -283,7 +287,7 @@ let contractInfo = [
     }
 ];
 
-export = {
+export default {
     abi: contractInfo,
     address: contractAddr
 };
