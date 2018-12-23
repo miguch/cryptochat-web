@@ -3,6 +3,7 @@
 
 import cryptoUtils from "./rsa_crypto"
 import blockchainUtils from "./blockchain"
+import Vue from 'vue';
 
 window.cryptoUtils = cryptoUtils || undefined;
 window.getEth = function() {
@@ -32,6 +33,7 @@ class Chat {
     public sentMessages: Array<MessageData> = [];
     public recvMessages: Array<MessageData> = [];
     public chattedUsers: Set<string> = new Set();
+    public userInfos: Array<UserInfo> = [];
     private lastSentIndex: number = 0;
     private lastRecvIndex: number = 0;
 
@@ -220,6 +222,18 @@ class Chat {
 
         this.sentMessages.sort((a, b) => a.sendDate - b.sendDate);
         this.recvMessages.sort((a, b) => a.sendDate - b.sendDate);
+
+        //Cache all chatted users' name.
+        for (let addr of this.chattedUsers.keys()) {
+            let [name, status] = await this.searchAddress(addr);
+            if (!status) {
+                continue;
+            }
+            Vue.set(this.userInfos, this.userInfos.length, {
+                username: name,
+                address: addr
+            });
+        }
     }
 
     public getMessagesWithUser(targetUser: string): Array<MessageData> {
@@ -234,6 +248,7 @@ class Chat {
                 result.push(msg);
             }
         }
+        
         //Sort by sending time
         result.sort((a, b) => a.sendDate - b.sendDate);
         return result;

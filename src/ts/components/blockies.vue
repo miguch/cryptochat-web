@@ -23,9 +23,6 @@ export default Vue.extend({
             seed: this.userAddress,
             size: 15,
             scale: 3,
-            color: '#dfe',
-            bgcolor: '#aaa',
-            spotcolor: '#000'
         });
         (<Element>this.$refs.blockiesCanvasContainer).appendChild(icon);
     }
@@ -37,6 +34,7 @@ export default Vue.extend({
 .chat-blockies {
     height: 45px;
     width: 45px;
-    margin: auto;
+    margin: 0 3px 0px 3px;
+    float: left;
 }
 </style>

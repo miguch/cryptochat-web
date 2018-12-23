@@ -23,15 +23,15 @@ export default Vue.extend({
     
     methods: {
         runSearch() {
-
+            this.$emit('onSearch', this.query);
         }
+
     }
 });
 </script>
 
 <style>
 #chat-user-search-area {
-    width: 70%;
-    margin: 0 auto;
+    margin: 10px;
 }
 </style>
