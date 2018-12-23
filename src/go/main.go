@@ -19,7 +19,7 @@ func (c *JsRsaCrypt) EncryptWithPubKey(publicKey string, plainText string) (text
 	res, err := c.crypt.EncryptString(plainText, publicKey)
 	if err != nil {
 		println(err)
-		return "", false
+		return err.Error(), false
 	}
 	return res, true
 }
@@ -28,7 +28,7 @@ func (c *JsRsaCrypt) Decrypt(cipherText string) (text string, status bool) {
 	res, err := c.crypt.DecryptString(cipherText)
 	if err != nil {
 		println(err)
-		return "", false
+		return err.Error(), false
 	}
 	return res, true
 }
@@ -37,7 +37,7 @@ func (c *JsRsaCrypt) Sign(message string) (string, bool) {
 	sig, err := c.crypt.SignMessageString(message)
 	if err != nil {
 		println(err)
-		return "", false
+		return err.Error(), false
 	}
 	return sig, true
 }

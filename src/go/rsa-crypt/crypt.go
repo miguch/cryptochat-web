@@ -58,11 +58,29 @@ func (cc *ChatCrypto) Encrypt(plainText, publicKey []byte) ([]byte, error) {
 	if err != nil {
 		return []byte{}, err
 	}
-	return rsa.EncryptPKCS1v15(cc.randReader, pubKey, plainText)
+	key, cipher, err := aesEncrypt(plainText)
+	if err != nil {
+		return []byte{}, err
+	}
+	encryptedKey, err := rsa.EncryptPKCS1v15(cc.randReader, pubKey, key)
+	if err != nil {
+		return []byte{}, err
+	}
+	cipher = append(encryptedKey, cipher...)
+
+	return cipher, nil
 }
 
 func (cc *ChatCrypto) Decrypt(cipherText []byte) ([]byte, error) {
-	return cc.RsaPrivateKey.Decrypt(cc.randReader, cipherText, nil)
+	const EncryptedKeyLength = 128
+	//First 128 bytes is the encrypted AES key
+	encryptedKey := cipherText[:EncryptedKeyLength]
+	cipherText = cipherText[EncryptedKeyLength:]
+	key, err := cc.RsaPrivateKey.Decrypt(cc.randReader, encryptedKey, nil)
+	if err != nil {
+		return []byte{}, err
+	}
+	return aesDecrypt(key, cipherText)
 }
 
 func (cc *ChatCrypto) GetPublicKey() []byte {

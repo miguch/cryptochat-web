@@ -6,6 +6,7 @@ import 'bootstrap-vue/dist/bootstrap-vue.css';
 
 import VueRouter from 'vue-router';
 import App from './App.vue';
+import route from './router';
 
 import blockchain from "./blockchain";
 
@@ -16,7 +17,13 @@ window.addEventListener('load', function() {
 Vue.use(VueRouter);
 Vue.use(BootstrapVue);
 
+const router = new VueRouter({
+    routes: route,
+    mode: 'history',
+  });
+
 new Vue({
     render: (h) => h(App),
+    router
   }).$mount('#app');
   

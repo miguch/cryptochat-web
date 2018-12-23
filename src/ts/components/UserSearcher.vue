@@ -12,7 +12,7 @@
 <script lang='ts'>
 import Vue from 'vue';
 import blockchainUtils from '../blockchain';
-let chatter = blockchainUtils.getChatter();
+import chatter from '../chat'
 
 export default Vue.extend({
     data: function() {
@@ -23,7 +23,7 @@ export default Vue.extend({
     
     methods: {
         runSearch() {
-            
+
         }
     }
 });
