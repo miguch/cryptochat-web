@@ -83,7 +83,11 @@ module.exports = {
     devtool: '#cheap-source-map',
     devServer: {
         contentBase: './dist',
-        hot: true
+        hot: true,
+        historyApiFallback: true,
+        headers: {
+            'Access-Control-Allow-Origin': '*',
+        }
     }
 };
 

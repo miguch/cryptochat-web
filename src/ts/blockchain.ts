@@ -41,9 +41,16 @@ export default new class {
     get web3() {
         return window.web3;
     }
+    get contractAddress(): string {
+        return contractAddr;
+    }
     checkValidAddress(address: string): boolean {
         let format = /^(0x)?[0-9a-f]{40}$/i;
         return format.test(address);
+    }
+    setNewContractAddress(address: string) {
+        contractAddr = address
+        contract = eth.contract(abi).at(address);
     }
 };
 

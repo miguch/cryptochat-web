@@ -6,6 +6,33 @@
 
   <b-navbar-brand href="#">CryptoChat</b-navbar-brand>
 
+  <b-btn variant="success" v-b-modal.chat-contract-config @click="initAddress">
+      Change Contract Address
+  </b-btn>
+
+  <b-modal id="chat-contract-config" ref="contractConfig" hide-footer title="Contract Configuration">
+      <p> Current Contract Address is: </p>
+      <p><strong>{{ contractAddress }}</strong></p>
+      <hr/>
+      <p>Enter the new contract address below:</p>
+      <b-input type="text" v-model="newAddress" placeholder="New Address" />
+      <br />
+      <b-alert :show="dismissCountDown"
+             dismissible
+             variant="warning"
+             @dismissed="dismissCountDown=0"
+             @dismiss-count-down="countDownChanged">
+      <p>Not a valid contract address!</p>
+      <b-progress variant="warning"
+                  :max="dismissSecs"
+                  :value="dismissCountDown"
+                  height="4px">
+      </b-progress>
+    </b-alert>  
+    <br/>
+    <b-btn variant="primary" @click="changeContractAddress">OK</b-btn>
+  </b-modal>
+
   <b-navbar-nav class="ml-auto">
     <b-nav-item href="#" disabled>{{ address }}</b-nav-item>
   </b-navbar-nav>
@@ -19,23 +46,57 @@
 <script lang='ts'>
 import Vue from 'vue';
 import chatter from "../chat";
+import blockchainUtils from '../blockchain';
 
 export default Vue.extend({
     data: function() {
         return {
-            currentPage: 'Contacts',
-            items: [
-                {
-                    text: 'Contacts',
-                    href: '/'
-                }
-            ]
+            newAddress: '',
+            dismissSecs: 10,
+            dismissCountDown: 0,
+            showDismissibleAlert: false,
+            contractAddress: ''
         };
     },
 
     computed: {
         address: function() {
             return chatter.selfAddress;
+        },
+        items: function() {
+            let is = [
+                {
+                    text: this.$route.name,
+                    href: this.$route.path
+                }
+            ];
+            return is;
+        },
+    },
+
+    methods: {
+        initAddress() {
+            this.contractAddress = blockchainUtils.contractAddress;
+        },
+        hideModal(modal: any) {
+            modal.hide()
+        },
+        changeContractAddress() {
+            if (blockchainUtils.checkValidAddress(this.newAddress)) {
+                blockchainUtils.setNewContractAddress(this.newAddress);
+                this.$emit("addressChange", this.newAddress);
+                this.hideModal(this.$refs.contractConfig);
+                this.contractAddress = this.newAddress;
+                this.$router.push({name: 'welcome'});
+            } else {
+                this.showAlert();
+            }
+        },
+        countDownChanged (dismissCountDown: number) {
+            this.dismissCountDown = dismissCountDown;
+        },
+        showAlert () {
+            this.dismissCountDown = this.dismissSecs;
         }
     }
     
@@ -55,7 +116,14 @@ export default Vue.extend({
 #chat-breadcrumb {
     width: 85%;
     margin: 0 auto;
-    background-color: #ffffff;
+}
+
+strong {
+    word-break: break-all;
+}
+
+#chat-contract-config {
+    color: #000;
 }
 
 </style>

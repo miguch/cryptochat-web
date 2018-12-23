@@ -1,6 +1,7 @@
 <template>
   <div id="app">
-    <NavBar></NavBar>
+    <NavBar v-on:addressChange="setNewAddress"></NavBar>
+    <router-view :newAddress="newAddress"/>
   </div>
 </template>
 
@@ -9,13 +10,21 @@ import VueRouter from 'vue-router';
 import { Component, Vue } from 'vue-property-decorator';
 import NavBar from './components/NavBar.vue';
 
+// @ts-ignore
 @Component({
   components: {
     NavBar
   },
 })
 export default class App extends Vue {
-  
+  newAddress = '';
+  setNewAddress(event: string) {
+    this.newAddress = event;
+  }
+  created() {
+    this.$router.push({name: 'welcome'});
+  }
+
 }
 </script>
 

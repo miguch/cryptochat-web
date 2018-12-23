@@ -10,7 +10,7 @@ import route from './router';
 
 import blockchain from "./blockchain";
 
-window.addEventListener('load', function() {
+window.addEventListener('load', function () {
     window.contract = blockchain.Contract;
 });
 
@@ -20,10 +20,14 @@ Vue.use(BootstrapVue);
 const router = new VueRouter({
     routes: route,
     mode: 'history',
-  });
+});
+
+if (module.hot) {
+    module.hot.accept();
+}
 
 new Vue({
     render: (h) => h(App),
     router
-  }).$mount('#app');
-  
+}).$mount('#app');
+

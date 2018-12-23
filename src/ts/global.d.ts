@@ -4,8 +4,9 @@ declare interface Window {
     eth: any;
     contract: any;
     Chat: any;
-    chatV: any;
+    blockchain: any;
     getEth: any;
+    addr: string;
 }
 declare var Web3: any;
 

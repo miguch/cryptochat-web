@@ -8,12 +8,13 @@ window.cryptoUtils = cryptoUtils || undefined;
 window.getEth = function() {
     return blockchainUtils.Eth;
 }
+window.blockchain = blockchainUtils;
 
 interface MessageData {
     content: string;
     sender: string;
     receiver: string;
-    sendDate: Date;
+    sendDate: number;
 }
 
 interface UserInfo {
@@ -31,11 +32,22 @@ class Chat {
     public sentMessages: Array<MessageData> = [];
     public recvMessages: Array<MessageData> = [];
     public chattedUsers: Set<string> = new Set();
+    private lastSentIndex: number = 0;
+    private lastRecvIndex: number = 0;
 
 
     constructor() {
 
     } 
+
+    public get alreadySignedIn() {
+        return this.signedIn;
+    }
+
+    public async userExist(): Promise<boolean> {
+        let userExists = (await blockchainUtils.Contract.hasUser(this.selfAddress))[0];
+        return userExists;
+    }
 
     public async createNewUser(newPass: string, username: string): Promise<[string, boolean]>{
         let testCrypt = new cryptoUtils(this.selfAddress, newPass);
@@ -120,7 +132,7 @@ class Chat {
             return ["", false];
         }
         let result = await blockchainUtils.Contract.getUsername(address);
-        return [result[0], result.status];
+        return [result[0], true];
     }
 
 
@@ -155,7 +167,7 @@ class Chat {
             if (!senderEncrypted[1] || !recvEncrypted[1]) {
                 return ["Fail to encrypt message.", false];
             }
-            await blockchainUtils.Contract.sendMessage(targetAddress, recvEncrypted, senderEncrypted, {from: this.selfAddress});
+            await blockchainUtils.Contract.sendMessage(targetAddress, recvEncrypted[0], senderEncrypted[0], {from: this.selfAddress});
             return ["", true];
         } catch {
             return ["Fail to send encrypted message.", false];
@@ -167,8 +179,8 @@ class Chat {
         if (typeof this.crypt === 'undefined') {
             return;
         }
-        let recvCount = await blockchainUtils.Contract.getRecvMsgCount({from: this.selfAddress});
-        let sentCount = await blockchainUtils.Contract.getSentMsgCount({from: this.selfAddress});
+        let recvCount = (await blockchainUtils.Contract.getRecvMsgCount({from: this.selfAddress}))[0].words[0];
+        let sentCount = (await blockchainUtils.Contract.getSentMsgCount({from: this.selfAddress}))[0].words[0];
 
         for (let i = 0; i < recvCount; i++) {
             let cipher = (await blockchainUtils.Contract.getUserRecvMsg(i, {from: this.selfAddress}))[0];
@@ -177,14 +189,14 @@ class Chat {
                 continue;
             }
             //check signature
-            let originData = JSON.stringify(msg.messageData);
-            let senderPubKey = (await blockchainUtils.Contract.GetPublicKey(msg.messageData.sender));
-            status = this.crypt.VerifyMessage(originData, msg.sign, senderPubKey);
+            let originData: MessageData = JSON.parse(msg.messageData);
+            let senderPubKey = (await blockchainUtils.Contract.getUserPublicKey(originData.sender))[0];
+            status = this.crypt.VerifyMessage(msg.messageData, msg.sign, senderPubKey);
             if (!status) {
                 continue;
             }
-            this.chattedUsers.add(msg.messageData.sender);
-            this.recvMessages.push(msg.messageData);
+            this.chattedUsers.add(originData.sender);
+            this.recvMessages.push(originData);
         }
 
         for (let i = 0; i < sentCount; i++) {
@@ -194,16 +206,38 @@ class Chat {
                 continue;
             }
             //check signature
-            let originData = JSON.stringify(msg.messageData);
-            status = this.crypt.VerifyMessage(originData, msg.sign, this.crypt.GetPublicKey());
+            let originData = JSON.parse(msg.messageData);
+            status = this.crypt.VerifyMessage(msg.messageData, msg.sign, this.crypt.GetPublicKey());
             if (!status) {
                 continue;
             }
-            this.chattedUsers.add(msg.messageData.receiver);
-            this.sentMessages.push(msg.messageData);
+            this.chattedUsers.add(originData.receiver);
+            this.sentMessages.push(originData);
         }
+
+        this.lastSentIndex = sentCount;
+        this.lastRecvIndex = recvCount;
+
+        this.sentMessages.sort((a, b) => a.sendDate - b.sendDate);
+        this.recvMessages.sort((a, b) => a.sendDate - b.sendDate);
     }
 
+    public getMessagesWithUser(targetUser: string): Array<MessageData> {
+        let result = [];
+        for (let msg of this.recvMessages) {
+            if (msg.sender === targetUser) {
+                result.push(msg);
+            }
+        }
+        for (let msg of this.sentMessages) {
+            if (msg.receiver === targetUser) {
+                result.push(msg);
+            }
+        }
+        //Sort by sending time
+        result.sort((a, b) => a.sendDate - b.sendDate);
+        return result;
+    }
 
 }
 
