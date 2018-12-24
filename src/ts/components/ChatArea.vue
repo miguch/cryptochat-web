@@ -95,6 +95,12 @@ export default Vue.extend({
         },
         async sendMessage() {
             await chatter.sendMessage(this.$route.params.target, this.inputMessage);
+            this.messages.push({
+                content: this.inputMessage + "(" + "pending" + ")",
+                sender: this.selfAddress,
+                receiver: this.$route.params.target,
+                sendDate: Date.now()
+            });
             this.inputMessage = '';
         }
     }

@@ -4,7 +4,7 @@ import Eth from 'ethjs'
 import info from "./contractInfo";
 
 let abi = info.abi;
-let contractAddr = info.address;
+let contractAddr: string;
 
 
 window.web3 = window.web3 || undefined;
@@ -20,6 +20,26 @@ window.addEventListener('load', function() {
     } else {
         alert('web3 Not Detected! You should consider trying MetaMask!');
         return;
+    }
+
+    switch (window.web3.version.network) {
+        case '1':
+            alert('We do not support running on the mainnet yet!');
+            break;
+        case '2':
+            alert('We do not support running on the morden net!');
+            break;
+        case '3':
+            contractAddr = info.address.ropsten;
+            break;
+        case '42':
+            alert('We do not support running on the koven net yet!');
+            break;
+        case '4':
+            alert('We do not support running on the Rinkeby net yet!');
+            break;
+        default:
+            contractAddr = info.address.ganache;
     }
 
     //Bind contract

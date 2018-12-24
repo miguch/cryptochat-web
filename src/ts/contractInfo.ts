@@ -1,4 +1,7 @@
-let contractAddr = "0xfd699566d43446d901e5542aebe64d9c644a6e2e";
+let contractAddr = {
+    ganache: "0xfd699566d43446d901e5542aebe64d9c644a6e2e",
+    ropsten: "0x03d9c77be859f0b0ffbf6547869f7a8e7ae021b0"
+};
 
 
 let contractInfo = [
