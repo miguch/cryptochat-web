@@ -36,7 +36,7 @@ window.addEventListener('load', function() {
             alert('We do not support running on the koven net yet!');
             break;
         case '4':
-            alert('We do not support running on the Rinkeby net yet!');
+            contractAddr = info.address.rinkeby;
             break;
         default:
             contractAddr = info.address.ganache;
