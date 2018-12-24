@@ -3,13 +3,20 @@
     <Searcher v-on:onSearch="searchUser"/>
     <hr />
     <b-list-group id="chat-contacts-list-group">
-        <b-list-group-item v-for="user of userList" v-bind:key="user.address">
-            <Blockies :user-address="user.address" v-if="user.address !== '0x0'"/>
+        <div v-for="user of userList" v-bind:key="user.address">
+        <!-- Display user info with link -->
+        <b-list-group-item v-if="user.address !== '0x0'" :to="{name: 'chatArea', params: {target: user.address}}">
+            <Blockies :user-address="user.address"/>
             <div>
             <p><strong>{{user.username}}</strong></p>
-            <span v-if="user.address !== '0x0'">{{user.address}}</span>
+            <span>{{user.address}}</span>
             </div>
         </b-list-group-item>
+        <!-- For display Not Found message -->
+        <b-list-group-item v-else>
+            <p><strong>{{user.username}}</strong></p>
+        </b-list-group-item>
+        </div>
     </b-list-group>
 </div>
 </template>
@@ -57,7 +64,7 @@ export default Vue.extend({
 
     mounted() {
         this.chattedUsers = chatter.userInfos;
-        setInterval(this.updateChattedUsers, 3000);
+        setInterval(this.updateChattedUsers, 5000);
     },
 
     methods: {

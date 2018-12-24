@@ -66,7 +66,8 @@ export default Vue.extend({
             passphrase: '',
             showAlert: false,
             alertDismissable: false,
-            alertMessage: ""
+            alertMessage: "",
+            address: ''
         }
     },
     mounted() {
@@ -80,9 +81,6 @@ export default Vue.extend({
         }
     },
     computed: {
-        address() {
-            return chatter.selfAddress;
-        },
         alertType(): string {
             return this.alertDismissable ? 'danger' : 'info';
         }
@@ -100,6 +98,7 @@ export default Vue.extend({
             //Must wait till contract is ready
             if (blockChainUtils.Contract) {
                 this.setRegistered();
+                this.address = chatter.selfAddress;
             } else {
                 setTimeout(this.checker, 1000);
             }

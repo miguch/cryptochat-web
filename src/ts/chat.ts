@@ -109,6 +109,7 @@ class Chat {
                 this.signedIn = true;
                 //Start reading messages
                 this.loadMessage();
+                
                 return true;
             }
             return false;
@@ -234,6 +235,9 @@ class Chat {
                 address: addr
             });
         }
+
+        //Periodically update new messages
+        setTimeout(this.updateMessages.bind(this), 5000);
     }
 
     public getMessagesWithUser(targetUser: string): Array<MessageData> {
@@ -254,6 +258,79 @@ class Chat {
         return result;
     }
 
+    public async updateMessages(): Promise<void> {
+        if (typeof this.crypt === 'undefined') {
+            return;
+        }
+
+        let recvCount = (await blockchainUtils.Contract.getRecvMsgCount({from: this.selfAddress}))[0].words[0];
+        let sentCount = (await blockchainUtils.Contract.getSentMsgCount({from: this.selfAddress}))[0].words[0];
+
+        if (this.lastSentIndex < sentCount) {
+            for (let i = this.lastSentIndex; i < sentCount; i++) {
+                let cipher = (await blockchainUtils.Contract.getUserSentMsg(i, {from: this.selfAddress}))[0];
+                let [msg, status] = this.crypt.DecryptObject(cipher);
+                if (!status) {
+                    continue;
+                }
+                //check signature
+                let originData = JSON.parse(msg.messageData);
+                status = this.crypt.VerifyMessage(msg.messageData, msg.sign, this.crypt.GetPublicKey());
+                if (!status) {
+                    continue;
+                }
+                if (!this.chattedUsers.has(originData.receiver)) {
+                    this.chattedUsers.add(originData.receiver);
+                    let [name, status] = await this.searchAddress(originData.receiver);
+                    if (status) {
+                        Vue.set(this.userInfos, this.userInfos.length, {
+                            username: name,
+                            address: originData.receiver
+                        });
+                    }
+                    
+                }
+                this.sentMessages.push(originData);
+            }
+        }
+
+        if (this.lastRecvIndex < recvCount) {
+            for (let i = this.lastRecvIndex; i < recvCount; i++) {
+                let cipher = (await blockchainUtils.Contract.getUserRecvMsg(i, {from: this.selfAddress}))[0];
+                let [msg, status] = this.crypt.DecryptObject(cipher);
+                if (!status) {
+                    continue;
+                }
+                //check signature
+                let originData: MessageData = JSON.parse(msg.messageData);
+                let senderPubKey = (await blockchainUtils.Contract.getUserPublicKey(originData.sender))[0];
+                status = this.crypt.VerifyMessage(msg.messageData, msg.sign, senderPubKey);
+                if (!status) {
+                    continue;
+                }
+                if (!this.chattedUsers.has(originData.sender)) {
+                    this.chattedUsers.add(originData.sender);
+                    let [name, status] = await this.searchAddress(originData.sender);
+                    if (status) {
+                        Vue.set(this.userInfos, this.userInfos.length, {
+                            username: name,
+                            address: originData.sender
+                        });
+                    }
+                }
+                this.recvMessages.push(originData);
+            }
+        }
+
+        this.lastSentIndex = sentCount;
+        this.lastRecvIndex = recvCount;
+
+        this.sentMessages.sort((a, b) => a.sendDate - b.sendDate);
+        this.recvMessages.sort((a, b) => a.sendDate - b.sendDate);
+
+        //Periodically update new messages
+        setTimeout(this.updateMessages.bind(this), 5000);
+    }
 }
 
 let chatter = new Chat();

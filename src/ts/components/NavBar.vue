@@ -55,26 +55,60 @@ export default Vue.extend({
             dismissSecs: 10,
             dismissCountDown: 0,
             showDismissibleAlert: false,
-            contractAddress: ''
+            contractAddress: '',
+            username: ''
         };
     },
 
     computed: {
         address: function() {
-            return chatter.selfAddress;
+            if (this.username.length === 0) {
+                return chatter.selfAddress;
+            } else {
+                return this.username + ": " + chatter.selfAddress;
+            }
         },
         items: function() {
-            let is = [
-                {
-                    text: this.$route.name,
-                    href: this.$route.path
-                }
-            ];
+            let is;
+            if (this.$route.name === 'chatArea') {
+                let name;
+                is = [
+                    {
+                        text: 'Contacts',
+                        to: {name: 'contacts'}
+                    },
+                    {
+                        text: this.$route.params.target,
+                        href: this.$route.fullPath
+                    }
+                ];
+            } else {
+                is = [
+                    {
+                        text: this.$route.name,
+                        href: this.$route.path
+                    }
+                ];
+            }
             return is;
         },
     },
 
+    mounted() {
+        this.setUsername();
+    },
+
     methods: {
+        async setUsername() {
+            if (!blockchainUtils.Contract) {
+                setTimeout(this.setUsername, 200);
+            } else {
+                let [username, status] = await chatter.searchAddress(chatter.selfAddress);
+                if (status) {
+                    this.username = username;
+                }
+            }
+        },
         initAddress() {
             this.contractAddress = blockchainUtils.contractAddress;
         },
