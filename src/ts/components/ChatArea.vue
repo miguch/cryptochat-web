@@ -28,6 +28,10 @@
         <b-form @submit.prevent="sendMessage">
         <b-form-textarea no-resize required rows="3" max-rows="3" v-model="inputMessage">
         </b-form-textarea>
+        <b-form-input type="text" id="chat-red-packet-input" v-model.number="transactionNum" placeholder="Red Packet Ethers" />
+        <b-btn variant="danger" @click="sendRedPacket" >
+            Send Red Packet
+        </b-btn>
         <b-btn type="submit" id="chat-send-msg-btn" variant="success">
             Send
         </b-btn>
@@ -58,12 +62,14 @@ export default Vue.extend({
         selfAddress: string;
         targetUsername: string;
         inputMessage: string;
+        transactionNum: number;
     } {
         return {
             messages: [],
             selfAddress: '',
             targetUsername: '',
-            inputMessage: ''
+            inputMessage: '',
+            transactionNum: 0
         };
     },
 
@@ -102,6 +108,12 @@ export default Vue.extend({
                 sendDate: Date.now()
             });
             this.inputMessage = '';
+        },
+        async sendRedPacket() {
+            if (this.transactionNum <= 0) {
+                return;
+            }
+            await chatter.sendTransaction(this.$route.params.target, this.transactionNum);
         }
     }
     
@@ -147,7 +159,7 @@ export default Vue.extend({
     display: block;
 }
 .chat-msg-window span {
-    font-size: 5px;
+    font-size: 12px;
     margin-left: 5px;
 }
 .chat-msg-window p {
@@ -208,8 +220,11 @@ export default Vue.extend({
     overflow: auto;
 }
 #chat-send-msg-btn {
-    margin-top: 4px;
     margin-right: 60px;
+}
+#chat-red-packet-input {
+    width: 40%;
+    display: inline-block;
 }
 
 </style>

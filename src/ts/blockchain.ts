@@ -72,5 +72,8 @@ export default new class {
         contractAddr = address
         contract = eth.contract(abi).at(address);
     }
+    etherToWei(ethers: number) {
+        return window.web3.toWei(ethers, "ether");
+    }
 };
 

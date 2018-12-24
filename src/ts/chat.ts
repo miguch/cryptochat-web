@@ -331,6 +331,10 @@ class Chat {
         //Periodically update new messages
         setTimeout(this.updateMessages.bind(this), 5000);
     }
+
+    async sendTransaction(target: string, ethers: number): Promise<void> {
+        await blockchainUtils.Contract.sendEther(target, {from: this.selfAddress, value: blockchainUtils.etherToWei(ethers)});
+    }
 }
 
 let chatter = new Chat();
