@@ -329,7 +329,7 @@ class Chat {
         this.recvMessages.sort((a, b) => a.sendDate - b.sendDate);
 
         //Periodically update new messages
-        setTimeout(this.updateMessages.bind(this), 5000);
+        setTimeout(this.updateMessages.bind(this), 2500);
     }
 
     async sendTransaction(target: string, ethers: number): Promise<void> {
