@@ -102,6 +102,14 @@ RSA算法的机制决定了在没有私钥的情况下对密文进行破解的�
 
 应用中对用户信息中的公钥数据以及发送消息时包括消息双方、消息内容以及发送日期的消息数据会使用 RSA 进行数字签名以证明数据的有效性，当用户登录时会验证用户信息的正确性，若不正确则无法登录，对于从区块链获取的消息数据，若数据签名无效则直接忽略该消息。
 
+## 实现中仍存在的问题
+
+经过了测试后，当前项目中仍存在如下问题：
+
+1. 登录注册时的耗时较长，如上面所提到的，在登录与注册时生成密钥的耗时较长，尤其在非 Chrome 浏览器上。
+2. 程序中每5秒从区块链检查一次是否有新消息，当检查中出现问题时可能导致新消息无法显示，只能刷新页面后才能查看消息更新。
+3. 在私链上进行测试时生成区块较快，发送的消息可以较快地被记录至合约数据中，但在Ropsten 和 Rinkeby 测试网络下进行测试时发送消息的交易需要较长时间才能被确认，使得发送消息的延迟较大（或许本应用更适合被称为 CryptoMail）。
+
 ## 项目中使用的开源项目
 
 - [ethereum/**blockies**](https://github.com/ethereum/blockies): 根据地址生成用户头像。
@@ -109,3 +117,4 @@ RSA算法的机制决定了在没有私钥的情况下对密文进行破解的�
 - [golang/crypto](https://github.com/golang/go/tree/master/src/crypto)：使用 Go 进行 RSA 和 AES 的数据加解密以及数字签名。
 - [gopherjs/**gopherjs**](https://github.com/gopherjs/gopherjs): 将 Go 编译为 JavaScript 供程序使用。
 - [vuejs/vue](https://github.com/vuejs/vue) 前端页面使用的框架。
+- [bootstrap-vue/**bootstrap-vue**](https://github.com/bootstrap-vue/bootstrap-vue)程序界面所使用的Bootstrap样式组件。
