@@ -65,7 +65,7 @@ export default Vue.extend({
             if (this.username.length === 0) {
                 return chatter.selfAddress;
             } else {
-                return this.username + ": " + chatter.selfAddress;
+                return (this as any).username + ": " + chatter.selfAddress;
             }
         },
         items: function() {
