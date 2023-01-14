@@ -43,7 +43,7 @@
     "vue-template-compiler": "^2.5.19",
     "vueify": "^9.4.1",
     "webpack": "^4.27.1",
-    "webpack-cli": "^3.1.2",
+    "webpack-cli": "^3.3.12",
     "webpack-dev-server": "^3.1.11",
     "webpack-env": "^0.8.0"
   }
